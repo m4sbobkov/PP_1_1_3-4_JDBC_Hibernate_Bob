@@ -15,9 +15,7 @@ public class UserDaoJDBCImpl implements UserDao {
 
     public void createUsersTable() {
 
-        try {
-            Statement statement = Util.getConnection().createStatement();
-
+        try (Connection con = Util.getConnection(); Statement statement = con.createStatement()) {
 
             statement.execute("""
                     CREATE TABLE IF NOT EXISTS `kata_db`.`users` (
@@ -26,7 +24,7 @@ public class UserDaoJDBCImpl implements UserDao {
                       `lastName` VARCHAR(45) NOT NULL,
                       `age` INT NOT NULL,
                       PRIMARY KEY (`id`));""");
-            statement.close();
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -34,27 +32,25 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        try {
-            Statement statement = Util.getConnection().createStatement();
+        try (Connection con = Util.getConnection(); Statement statement = con.createStatement()) {
+
             statement.executeUpdate("DROP TABLE IF EXISTS users");
 
-            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void saveUser(String name, String lastName, byte age) {
-        try {
-            String insert = "INSERT INTO kata_db.users (name, lastName, age) VALUES (?,?,?)";
-            PreparedStatement statement = Util.getConnection().prepareStatement(insert);
+        String insert = "INSERT INTO kata_db.users (name, lastName, age) VALUES (?,?,?)";
+
+        try (Connection con = Util.getConnection(); PreparedStatement statement = con.prepareStatement(insert)) {
 
             statement.setString(1, name);
             statement.setString(2, lastName);
             statement.setInt(3, age);
             statement.execute();
 
-            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -62,23 +58,26 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void removeUserById(long id) {
-        try {
-            String delete = "DELETE FROM users WHERE id = ?";
-            PreparedStatement statement = Util.getConnection().prepareStatement(delete);
+
+        String delete = "DELETE FROM users WHERE id = ?";
+
+        try (Connection con = Util.getConnection(); PreparedStatement statement = con.prepareStatement(delete)) {
+
             statement.setLong(1, id);
             statement.executeUpdate();
 
-            statement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public List<User> getAllUsers() {
         List<User> list = new ArrayList<>();
-        try {
-            String getSQL = "SELECT * FROM kata_db.users";
-            Statement statement = Util.getConnection().createStatement();
+        String getSQL = "SELECT * FROM kata_db.users";
+
+        try (Connection con = Util.getConnection(); Statement statement = con.createStatement()) {
+
             ResultSet resultSet = statement.executeQuery(getSQL);
 
             while (resultSet.next()) {
@@ -91,20 +90,21 @@ public class UserDaoJDBCImpl implements UserDao {
 
                 list.add(user);
             }
-            statement.close();
-            return list;
+
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
+        return list;
 
     }
 
     public void cleanUsersTable() {
-        try {
-            Statement statement = Util.getConnection().createStatement();
+        try (Connection con = Util.getConnection(); Statement statement = con.createStatement()) {
+
             statement.executeUpdate("DELETE FROM users");
-            statement.close();
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
